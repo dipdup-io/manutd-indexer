@@ -1,0 +1,44 @@
+spec_version: 3.0
+package: manutd_indexer
+
+
+database:
+  kind: postgres
+  host: ${POSTGRES_HOST:-db}
+  port: ${POSTGRES_PORT:-5432}
+  user: ${POSTGRES_USER:-dipdup}
+  password: ${POSTGRES_PASSWORD:-changeme}
+  database: ${POSTGRES_DB:-dipdup}
+
+
+hasura:
+  url: ${HASURA_URL:-http://hasura:8080}
+  admin_secret: ${ADMIN_SECRET:-changeme}
+  select_limit: ${SELECT_LIMIT:-1000}
+  allow_aggregations: false
+  rest: false
+
+contracts:
+  mu_minter_ghostnet:
+    kind: tezos
+    address: KT1M2u4GUZsQ8BUYKTKYPEwzDYUurRtooTwn
+    typename: mu_minter
+
+datasources:
+  ghostnet:
+    kind: tezos.tzkt
+    url: ${TZKT_URL:-https://api.ghostnet.tzkt.io}
+
+indexes:
+  big_maps_ghostnet:
+    kind: tezos.big_maps
+    datasources:
+      - ghostnet
+    skip_history: never
+    handlers:
+      - callback: on_metadata_update
+        contract: mu_minter_ghostnet
+        path: metadata
+      - callback: on_token_metadata_update
+        contract: mu_minter_ghostnet
+        path: assets.token_metadata
