@@ -42,3 +42,6 @@ indexes:
       - callback: on_token_metadata_update
         contract: mu_minter_ghostnet
         path: assets.token_metadata
+
+advanced:
+  metadata_interface: True

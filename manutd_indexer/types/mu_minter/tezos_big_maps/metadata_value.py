@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from typing import Any
+from typing import Dict
 
 from orjson import orjson
 from pydantic import RootModel
+
+from manutd_indexer.models import MetadataBigMapModelMixin
 
 
 class MetadataValue(RootModel[str]):
@@ -25,3 +28,9 @@ class MetadataValue(RootModel[str]):
             pass
 
         raise ValueError
+
+    def get_field_dto(self) -> Dict[str, Any]:
+        name = MetadataBigMapModelMixin.value.model_field_name
+        value = self.as_dict()
+
+        return {name: value}
