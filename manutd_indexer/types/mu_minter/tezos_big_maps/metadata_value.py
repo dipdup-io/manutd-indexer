@@ -2,8 +2,26 @@
 
 from __future__ import annotations
 
+from typing import Any
+
+from orjson import orjson
 from pydantic import RootModel
 
 
 class MetadataValue(RootModel[str]):
     root: str
+
+    def as_dict(self) -> dict[str, Any]:
+        value = self.root
+
+        try:
+            value = bytes.fromhex(value).decode()
+        except ValueError:
+            pass
+
+        try:
+            return orjson.loads(value)
+        except ValueError:
+            pass
+
+        raise ValueError

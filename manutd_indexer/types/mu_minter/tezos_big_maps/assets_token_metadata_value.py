@@ -13,3 +13,12 @@ class AssetsTokenMetadataValue(BaseModel):
     )
     token_id: str
     token_info: Dict[str, str]
+
+    def get_metadata_key(self) -> str:
+        value = self.token_info.get('')
+        try:
+            value = bytes.fromhex(value).decode()
+        except ValueError:
+            pass
+
+        return value

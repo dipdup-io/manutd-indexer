@@ -1,59 +1,88 @@
+import uuid
 
 from dipdup import fields
 from dipdup.models import Model
-from tortoise.fields.relational import ForeignKeyFieldInstance
+from tortoise.fields import DatetimeField
+
+TEZOS_STORAGE_PREFIX = 'tezos-storage:'
+
+UUID_NAME_DELIMITER = '-'
 
 
-class Metadata(Model):
+class DatetimeModelMixin:
+    created_at = DatetimeField(index=True, auto_now_add=True)
+    updated_at = DatetimeField(index=True, auto_now=True)
+
+
+class Test(Model):
+    class Meta:
+        table = 'test'
+        model = 'models.Test'
+
+    def __post_init__(self):
+        self.pk = 'df4495c8-1111-2222-3333-ef7c54617da8'
+
+    id = fields.UUIDField(pk=True)
+    level = fields.IntField(index=True)
+
+class AbstractTezosOperation(Model):
+    class Meta:
+        abstract = True
+        indexes = (('network', 'timestamp'), ('network', 'level'))
+
+    id = fields.UUIDField(pk=True)
+    timestamp = fields.DatetimeField(index=True)
+    network = fields.CharField(max_length=51, index=True)
+    level = fields.IntField(index=True)
+
+
+class MetadataBigMapHistory(AbstractTezosOperation, DatetimeModelMixin):
     class Meta:
         table = 'metadata'
-        model = 'models.Metadata'
+        model = 'models.MetadataBigMapHistory'
 
-    id = fields.UUIDField(pk=True)
-    network = fields.CharField(51)
-    key = fields.CharField(max_length=64, unique=True, index=True)
-    value = fields.TextField()
+    key = fields.CharField(max_length=64, index=True)
+    value = fields.JSONField()
+
+    join_key = fields.UUIDField(index=True)
 
 
-class TokenMetadata(Model):
+class TokenMetadataBigMapHistory(AbstractTezosOperation, DatetimeModelMixin):
     class Meta:
         table = 'token_metadata'
-        model = 'models.TokenMetadata'
+        model = 'models.TokenMetadataBigMapHistory'
+        indexes = (('network', 'contract', 'token_id'))
 
-    id = fields.UUIDField(pk=True)
-    network = fields.CharField(51)
     contract = fields.CharField(max_length=36)
     token_id = fields.CharField(max_length=16)
-    metadata: ForeignKeyFieldInstance[Metadata] = fields.ForeignKeyField(
-        model_name=Metadata.Meta.model,
-        source_field='metadata_id',
-        to_field='key',
-    )
-    resolved = fields.BooleanField(default=False, index=True)
-    failures_count = fields.IntField(default=0, index=True)
-    created_at = fields.DatetimeField(auto_now_add=True, index=True)
+    metadata_key = fields.CharField(max_length=64, index=True)
 
-
+    join_key = fields.UUIDField(index=True)
+    #
     # @classmethod
-    # def get_unresolved_chunk(cls) -> QuerySet:
-    #     return (
-    #         cls.filter(
-    #             resolved=False,
-    #             failures_count__lt=Const.failures_limit,
-    #         )
-    #         .order_by("created_at")
-    #         .limit(Const.select_chunk_size)
+    # def get_pk(cls, pool_from: Pool, pool_to: Pool) -> uuid.UUID:
+    #     return uuid.uuid5(
+    #         namespace=uuid.NAMESPACE_OID,
+    #         name=UUID_NAME_DELIMITER.join(
+    #             [
+    #                 *cls.sort_pair_items(
+    #                     pool_from,
+    #                     pool_to,
+    #                 ),
+    #             ]
+    #         ),
     #     )
-    #
-    # async def set_resolved(self):
-    #     if self.resolved:
-    #         return
-    #     self.resolved = True
-    #     await self.save()
-    #
-    # async def set_failed(self):
-    #     self.failures_count += 1
-    #     await self.save()
-    #
-    # def __str__(self):
-    #     return f"{self.token_id}"
+
+
+class ContinuousHelper:
+    @staticmethod
+    def make_join_key(network: str, metadata_key: str) -> uuid.UUID:
+        return uuid.uuid5(
+            namespace=uuid.NAMESPACE_OID,
+            name=UUID_NAME_DELIMITER.join(
+                [
+                    network,
+                    metadata_key.removeprefix(TEZOS_STORAGE_PREFIX),
+                ]
+            )
+        )
