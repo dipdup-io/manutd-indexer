@@ -1,6 +1,5 @@
 import uuid
-from datetime import datetime
-from datetime import timezone
+
 from typing import Generic
 from typing import TypeVar
 
@@ -8,8 +7,7 @@ from dipdup.context import HandlerContext
 from dipdup.models.tezos import TezosBigMapAction
 from dipdup.models.tezos import TezosBigMapDiff
 
-
-from manutd_indexer.models import TEZOS_STORAGE_PREFIX
+from manutd_indexer.models import TEZOS_STORAGE_PREFIX, TokenMetadataBigMapState, MetadataBigMapState
 from manutd_indexer.models import UUID_NAME_DELIMITER
 from manutd_indexer.types.mu_minter.tezos_big_maps.metadata_key import MetadataKey
 
@@ -23,6 +21,7 @@ class BigMapController(Generic[BigMapDiffType]):
         self._big_map_diff = big_map_diff
         self._network: str = ctx.handler_config.parent.datasources[0].name
         self._contract: str = ctx.handler_config.contract.address
+        self._ctx = ctx
 
     async def handle_action(self):
         match self._big_map_diff:
@@ -47,16 +46,17 @@ class BigMapController(Generic[BigMapDiffType]):
         record_dto = self._build_record_dto()
 
         state_model = self._big_map_diff.key.get_state_model()
-        await state_model.create(**record_dto)
-
+        model = await state_model.create(**record_dto)
         history_model = self._big_map_diff.key.get_history_model()
         await history_model.create(**record_dto)
+        key = getattr(model, 'key', None) or getattr(model, 'metadata_key', None)
+        await self.handle_token_metadata(key)
 
     async def _handle_update_key(self):
         defaults, filter_query_dto = self._build_update_parameters_dto()
 
         state_model = self._big_map_diff.key.get_state_model()
-        await state_model.update_or_create(
+        model, created = await state_model.update_or_create(
             defaults=defaults,
             **filter_query_dto,
         )
@@ -65,6 +65,9 @@ class BigMapController(Generic[BigMapDiffType]):
 
         history_model = self._big_map_diff.key.get_history_model()
         await history_model.create(**record_dto)
+
+        key = getattr(model, 'key', None) or getattr(model, 'metadata_key', None)
+        await self.handle_token_metadata(key)
 
     async def _handle_remove_key(self):
         record_dto = self._build_record_dto()
@@ -120,3 +123,22 @@ class BigMapController(Generic[BigMapDiffType]):
                 ]
             ),
         )
+
+    async def handle_token_metadata(self, key):
+        if key is None:
+            return
+        metadata = await MetadataBigMapState.get_or_none(
+            key=key
+        )
+        if metadata is None:
+            return
+        token_metadata_queryset = await TokenMetadataBigMapState.filter(
+            metadata_key=key
+        )
+        for token_metadata in token_metadata_queryset:
+            await self._ctx.update_token_metadata(
+                network=self._network,
+                address=self._contract,
+                token_id=token_metadata.token_id,
+                metadata=metadata.value,
+            )
