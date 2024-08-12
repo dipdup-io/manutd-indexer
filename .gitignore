@@ -27,3 +27,5 @@
 !**/*.yml
 !**/*.j2
 !**/*.env.default
+
+.idea
