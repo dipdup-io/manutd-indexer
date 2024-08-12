@@ -4,7 +4,8 @@ package: manutd_indexer
 
 database:
   kind: postgres
-  host: ${POSTGRES_HOST:-db}
+#  host: ${POSTGRES_HOST:-db}
+  host: ${POSTGRES_HOST:-localhost}
   port: ${POSTGRES_PORT:-5432}
   user: ${POSTGRES_USER:-dipdup}
   password: ${POSTGRES_PASSWORD:-changeme}
@@ -12,29 +13,49 @@ database:
 
 
 hasura:
-  url: ${HASURA_URL:-http://hasura:8080}
+#  url: ${HASURA_URL:-http://hasura:8080}
+  url: ${HASURA_URL:-http://localhost:8080}
   admin_secret: ${ADMIN_SECRET:-changeme}
   select_limit: ${SELECT_LIMIT:-1000}
   allow_aggregations: false
   rest: false
 
 contracts:
+  mu_minter_mainnet:
+    kind: tezos
+    address: ${CONTRACT_MAINNET}
+    typename: mu_minter
   mu_minter_ghostnet:
     kind: tezos
-    address: ${CONTRACT}
+    address: ${CONTRACT_GHOSTNET}
     typename: mu_minter
 
 datasources:
+  mainnet:
+    kind: tezos.tzkt
+    url: https://api.tzkt.io
   ghostnet:
     kind: tezos.tzkt
     url: ${TZKT_URL:-https://api.ghostnet.tzkt.io}
 
 indexes:
-  big_maps_ghostnet:
+  metadata_mainnet:
+    kind: tezos.big_maps
+    datasources:
+      - mainnet
+    skip_history: once
+    handlers:
+      - callback: on_metadata_update
+        contract: mu_minter_mainnet
+        path: metadata
+      - callback: on_token_metadata_update
+        contract: mu_minter_mainnet
+        path: assets.token_metadata
+  metadata_ghostnet:
     kind: tezos.big_maps
     datasources:
       - ghostnet
-    skip_history: never
+    skip_history: once
     handlers:
       - callback: on_metadata_update
         contract: mu_minter_ghostnet
