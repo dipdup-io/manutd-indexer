@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Dict
 
-from orjson import orjson
-from pydantic import RootModel
-
+import orjson
 from manutd_indexer.models import MetadataBigMapModelMixin
+from pydantic import RootModel
 
 
 class MetadataValue(RootModel[str]):
@@ -22,15 +20,10 @@ class MetadataValue(RootModel[str]):
         except ValueError:
             pass
 
-        try:
-            return orjson.loads(value)
-        except ValueError:
-            pass
+        return orjson.loads(value)
 
-        raise ValueError
-
-    def get_field_dto(self) -> Dict[str, Any]:
-        name = MetadataBigMapModelMixin.value.model_field_name
+    def get_field_dto(self) -> dict[str, Any]:
+        name = MetadataBigMapModelMixin.value.model_field_name  # type: ignore[arg-type]
         value = self.as_dict()
 
         return {name: value}

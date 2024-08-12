@@ -3,37 +3,33 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Dict
-from typing import Type
 
-from pydantic import RootModel
-
-from manutd_indexer.models import AbstractBigMapAction
 from manutd_indexer.models import MetadataBigMapHistory
 from manutd_indexer.models import MetadataBigMapModelMixin
 from manutd_indexer.models import MetadataBigMapState
+from pydantic import RootModel
 
 
 class MetadataKey(RootModel[str]):
     root: str
 
-    def get_field_dto(self) -> Dict[str, Any]:
-        name = MetadataBigMapModelMixin.key.model_field_name
+    def get_field_dto(self) -> dict[str, Any]:
+        name = MetadataBigMapModelMixin.key.model_field_name  # type: ignore[arg-type]
 
         return {name: self.root}
 
     @staticmethod
-    def get_state_model() -> Type[MetadataBigMapState]:
+    def get_state_model() -> type[MetadataBigMapState]:
         return MetadataBigMapState
 
     @staticmethod
-    def get_history_model() -> Type[MetadataBigMapHistory]:
+    def get_history_model() -> type[MetadataBigMapHistory]:
         return MetadataBigMapHistory
 
     @staticmethod
     def get_composite_key_fields() -> list[str]:
         return [
             'network',
-            MetadataBigMapModelMixin.contract.model_field_name,
+            MetadataBigMapModelMixin.contract.model_field_name,  # type: ignore[arg-type]
             MetadataBigMapState.key.model_field_name,
         ]

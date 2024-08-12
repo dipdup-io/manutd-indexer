@@ -1,5 +1,4 @@
 import uuid
-
 from typing import Generic
 from typing import TypeVar
 
@@ -7,8 +6,10 @@ from dipdup.context import HandlerContext
 from dipdup.models.tezos import TezosBigMapAction
 from dipdup.models.tezos import TezosBigMapDiff
 
-from manutd_indexer.models import TEZOS_STORAGE_PREFIX, TokenMetadataBigMapState, MetadataBigMapState
+from manutd_indexer.models import TEZOS_STORAGE_PREFIX
 from manutd_indexer.models import UUID_NAME_DELIMITER
+from manutd_indexer.models import MetadataBigMapState
+from manutd_indexer.models import TokenMetadataBigMapState
 from manutd_indexer.types.mu_minter.tezos_big_maps.metadata_key import MetadataKey
 
 JOIN_KEY_FIELD_NAME = 'join_key'
@@ -20,7 +21,7 @@ class BigMapController(Generic[BigMapDiffType]):
     def __init__(self, ctx: HandlerContext, big_map_diff: TezosBigMapDiff) -> None:
         self._big_map_diff = big_map_diff
         self._network: str = ctx.handler_config.parent.datasources[0].name
-        self._contract: str = ctx.handler_config.contract.address
+        self._contract: str = ctx.handler_config.contract.address  # type: ignore[attr-defined]
         self._ctx = ctx
 
     async def handle_action(self):
@@ -80,26 +81,22 @@ class BigMapController(Generic[BigMapDiffType]):
         await history_model.create(**record_dto)
 
     def _build_record_dto(self) -> dict:
-        record_dto = dict(
-            timestamp=self._big_map_diff.data.timestamp,
-            network=self._network,
-            level=self._big_map_diff.data.level,
-            contract=self._contract,
-            action=self._big_map_diff.data.action,
-        )
-        record_dto.update(
-            self._big_map_diff.key.get_field_dto()
-        )
-        record_dto.update(
-            self._big_map_diff.value.get_field_dto()
-        )
+        record_dto = {
+            'timestamp': self._big_map_diff.data.timestamp,
+            'network': self._network,
+            'level': self._big_map_diff.data.level,
+            'contract': self._contract,
+            'action': self._big_map_diff.data.action,
+        }
+        record_dto.update(self._big_map_diff.key.get_field_dto())  # type: ignore[union-attr]
+        record_dto.update(self._big_map_diff.value.get_field_dto())  # type: ignore[union-attr]
         record_dto.update({JOIN_KEY_FIELD_NAME: self.make_join_key()})
 
         return record_dto
 
     def _build_update_parameters_dto(self) -> tuple[dict, dict]:
         defaults = self._build_record_dto()
-        fields_list = self._big_map_diff.key.get_composite_key_fields()
+        fields_list = self._big_map_diff.key.get_composite_key_fields()  # type: ignore[union-attr]
         filter_query_dto = {}
         for field_name in fields_list:
             if field_name in defaults:
@@ -111,7 +108,7 @@ class BigMapController(Generic[BigMapDiffType]):
     def make_join_key(self) -> uuid.UUID:
         network = self._network
         contract = self._contract
-        metadata_key = self._big_map_diff.key.get_field_dto().popitem()[1].removeprefix(TEZOS_STORAGE_PREFIX)
+        metadata_key = self._big_map_diff.key.get_field_dto().popitem()[1].removeprefix(TEZOS_STORAGE_PREFIX)  # type: ignore[union-attr]
 
         return uuid.uuid5(
             namespace=uuid.NAMESPACE_OID,
@@ -127,14 +124,10 @@ class BigMapController(Generic[BigMapDiffType]):
     async def handle_token_metadata(self, key):
         if key is None:
             return
-        metadata = await MetadataBigMapState.get_or_none(
-            key=key
-        )
+        metadata = await MetadataBigMapState.get_or_none(key=key)
         if metadata is None:
             return
-        token_metadata_queryset = await TokenMetadataBigMapState.filter(
-            metadata_key=key
-        )
+        token_metadata_queryset = await TokenMetadataBigMapState.filter(metadata_key=key)
         for token_metadata in token_metadata_queryset:
             await self._ctx.update_token_metadata(
                 network=self._network,

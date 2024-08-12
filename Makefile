@@ -1,47 +1,45 @@
-.ONESHELL:
-.DEFAULT_GOAL: all
+.PHONY: $(MAKECMDGOALS)
+MAKEFLAGS += --no-print-directory
+##
+##  🚧 DipDup developer tools
+##
+PACKAGE=manutd_indexer
+TAG=latest
+COMPOSE=deploy/compose.yaml
 
-py := poetry run
+help:           ## Show this help (default)
+	@grep -Fh "##" $(MAKEFILE_LIST) | grep -Fv grep -F | sed -e 's/\\$$//' | sed -e 's/##//'
 
-source_dir := .
-unit_tests_dir := tests
+all:            ## Run an entire CI pipeline
+	make format lint
 
-dipdup_args := -e .env -c .
+format:         ## Format with all tools
+	make black
 
-test:
-	PYTHONPATH=. $(py) pytest tests/
+lint:           ## Lint with all tools
+	make ruff mypy
 
-install:
-	poetry install `if [ "${DEV}" = "0" ]; then echo "--only main"; fi` --sync
+##
 
-isort:
-	$(py) isort $(source_dir) $(unit_tests_dir)
+black:          ## Format with black
+	black .
 
-ssort:
-	$(py) ssort $(source_dir) $(unit_tests_dir)
+ruff:           ## Lint with ruff
+	ruff check --fix .
 
-black:
-	$(py) black $(source_dir) $(unit_tests_dir)
+mypy:           ## Lint with mypy
+	mypy --exclude ${PACKAGE} .
 
-ruff:
-	$(py) ruff check --fix-only --show-fixes $(source_dir) $(unit_tests_dir)
+##
 
-mypy:
-	$(py) mypy $(source_dir) $(unit_tests_dir)
+image:          ## Build Docker image
+	docker buildx build . -t ${PACKAGE}:${TAG} --load
 
-lint: isort ssort black ruff mypy
+up:             ## Start Compose stack
+	docker-compose -f ${COMPOSE} up -d --build
+	docker-compose -f ${COMPOSE} logs -f
 
-wipe:
-	$(py) dipdup $(dipdup_args) schema wipe --force
+down:           ## Stop Compose stack
+	docker-compose -f ${COMPOSE} down
 
-init:
-	$(py) dipdup $(dipdup_args) init
-
-run:
-	$(py) dipdup $(dipdup_args) run
-
-up:
-	docker-compose up -d --build --remove-orphans --force-recreate
-
-down:
-	docker-compose down --volumes
+##

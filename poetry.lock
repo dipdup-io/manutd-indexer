@@ -2919,20 +2919,6 @@ dev = ["build", "hatch"]
 doc = ["sphinx"]
 
 [[package]]
-name = "ssort"
-version = "0.13.0"
-description = "The python statement sorter"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "ssort-0.13.0-py3-none-any.whl", hash = "sha256:bb33a64403c3769aec9f5d63f086e4355b6fc1dc62b91e1af6117781fb0b6810"},
-    {file = "ssort-0.13.0.tar.gz", hash = "sha256:a7b35e7725fa93bc6bd82839eb70083cf31bd58545357534288d988a4af8ec4d"},
-]
-
-[package.dependencies]
-pathspec = ">=0.9.0"
-
-[[package]]
 name = "starknet-py"
 version = "0.23.0"
 description = "A python SDK for Starknet"
@@ -3398,4 +3384,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "874e8387bfc993d3009d77d95f3375a821dfe45e2e1fabb89c4f30d55c9a6d88"
+content-hash = "e37a07428f373b9a257be23737ef1a9ed6fbdad9a94a1b33f1b88c8ad0a3bdec"

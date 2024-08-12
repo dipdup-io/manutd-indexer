@@ -3,37 +3,34 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Dict
-from typing import Type
-
-from pydantic import RootModel
 
 from manutd_indexer.models import AbstractBigMapAction
 from manutd_indexer.models import TokenMetadataBigMapHistory
 from manutd_indexer.models import TokenMetadataBigMapModelMixin
 from manutd_indexer.models import TokenMetadataBigMapState
+from pydantic import RootModel
 
 
 class AssetsTokenMetadataKey(RootModel[str]):
     root: str
 
-    def get_field_dto(self) -> Dict[str, Any]:
-        name = TokenMetadataBigMapModelMixin.token_id.model_field_name
+    def get_field_dto(self) -> dict[str, Any]:
+        name = TokenMetadataBigMapModelMixin.token_id.model_field_name  # type: ignore[arg-type]
 
         return {name: self.root}
 
     @staticmethod
-    def get_state_model() -> Type[TokenMetadataBigMapState]:
+    def get_state_model() -> type[TokenMetadataBigMapState]:
         return TokenMetadataBigMapState
 
     @staticmethod
-    def get_history_model() -> Type[TokenMetadataBigMapHistory]:
+    def get_history_model() -> type[TokenMetadataBigMapHistory]:
         return TokenMetadataBigMapHistory
 
     @staticmethod
     def get_composite_key_fields() -> list[str]:
         return [
             AbstractBigMapAction.network.model_field_name,
-            TokenMetadataBigMapModelMixin.contract.model_field_name,
-            TokenMetadataBigMapModelMixin.token_id.model_field_name,
+            TokenMetadataBigMapModelMixin.contract.model_field_name,  # type: ignore[arg-type]
+            TokenMetadataBigMapModelMixin.token_id.model_field_name,  # type: ignore[arg-type]
         ]

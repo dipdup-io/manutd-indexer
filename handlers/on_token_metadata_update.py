@@ -1,9 +1,9 @@
-from manutd_indexer.handlers.big_map_controller import BigMapController
-
-from manutd_indexer.types.mu_minter.tezos_big_maps.assets_token_metadata_key import AssetsTokenMetadataKey
-from manutd_indexer.types.mu_minter.tezos_big_maps.assets_token_metadata_value import AssetsTokenMetadataValue
 from dipdup.context import HandlerContext
 from dipdup.models.tezos import TezosBigMapDiff
+
+from manutd_indexer.handlers.big_map_controller import BigMapController
+from manutd_indexer.types.mu_minter.tezos_big_maps.assets_token_metadata_key import AssetsTokenMetadataKey
+from manutd_indexer.types.mu_minter.tezos_big_maps.assets_token_metadata_value import AssetsTokenMetadataValue
 
 TokenMetadataBigMapDiff = TezosBigMapDiff[AssetsTokenMetadataKey, AssetsTokenMetadataValue]
 
