@@ -21,7 +21,7 @@ hasura:
 contracts:
   mu_minter_ghostnet:
     kind: tezos
-    address: KT1M2u4GUZsQ8BUYKTKYPEwzDYUurRtooTwn
+    address: ${CONTRACT}
     typename: mu_minter
 
 datasources:
