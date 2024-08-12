@@ -36,7 +36,7 @@ templates:
     kind: tezos.big_maps
     datasources:
       - <datasource>
-    skip_history: always
+    skip_history: once
     handlers:
       - callback: on_metadata_update
         contract: <contract>

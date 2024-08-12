@@ -1,6 +1,4 @@
-version: "3.8"
 name: manutd_indexer
-
 services:
   dipdup:
     build:
@@ -19,7 +17,7 @@ services:
   db:
     image: timescale/timescaledb-ha:pg15
     ports:
-      - 5432
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - db:/home/postgres/pgdata/data
     restart: always
@@ -37,7 +35,7 @@ services:
   hasura:
     image: hasura/graphql-engine:latest
     ports:
-      - 8080
+      - "${HASURA_HOST_PORT:-8080}:8080"
     depends_on:
       - db
     restart: always
