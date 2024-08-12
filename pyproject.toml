@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ManUtd Indexer"
+name = "manutd_indexer"
 version = "0.0.1"
 description = "A blockchain indexer built with DipDup"
 authors = ["John Doe <john_doe@example.com>", ]
@@ -7,7 +7,7 @@ authors = ["John Doe <john_doe@example.com>", ]
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-dipdup = {git = "https://github.com/dipdup-io/dipdup.git", rev="next"}
+dipdup = "8.0.0b5"
 
 
 [tool.poetry.group.dev.dependencies]

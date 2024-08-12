@@ -3,7 +3,7 @@
 
 py := poetry run
 
-source_dir := manutd_indexer
+source_dir := .
 unit_tests_dir := tests
 
 dipdup_args := -e .env -c .
