@@ -124,10 +124,18 @@ class BigMapController(Generic[BigMapDiffType]):
     async def handle_token_metadata(self, key):
         if key is None:
             return
-        metadata = await MetadataBigMapState.get_or_none(key=key)
+        metadata = await MetadataBigMapState.get_or_none(
+            network=self._network,
+            contract=self._contract,
+            key=key,
+        )
         if metadata is None:
             return
-        token_metadata_queryset = await TokenMetadataBigMapState.filter(metadata_key=key)
+        token_metadata_queryset = await TokenMetadataBigMapState.filter(
+            network=self._network,
+            contract=self._contract,
+            metadata_key=key,
+        )
         for token_metadata in token_metadata_queryset:
             await self._ctx.update_token_metadata(
                 network=self._network,
