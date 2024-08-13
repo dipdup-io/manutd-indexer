@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'master'
+      - 'ghostnet'
     tags:
       - '*.*.*'
   pull_request:
