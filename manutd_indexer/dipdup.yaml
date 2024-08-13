@@ -1,7 +1,6 @@
 spec_version: 3.0
 package: manutd_indexer
 
-
 database:
   kind: postgres
   host: ${POSTGRES_HOST:-db}
@@ -9,7 +8,6 @@ database:
   user: ${POSTGRES_USER:-dipdup}
   password: ${POSTGRES_PASSWORD:-changeme}
   database: ${POSTGRES_DB:-dipdup}
-
 
 hasura:
   url: ${HASURA_URL:-http://hasura:8080}
@@ -19,28 +17,47 @@ hasura:
   rest: false
 
 contracts:
-  mu_minter_ghostnet:
+  mainnet:
     kind: tezos
-    address: ${CONTRACT}
+    address: ${CONTRACT_MAINNET}
+    typename: mu_minter
+  ghostnet:
+    kind: tezos
+    address: ${CONTRACT_GHOSTNET}
     typename: mu_minter
 
 datasources:
+  mainnet:
+    kind: tezos.tzkt
+    url: https://api.tzkt.io
   ghostnet:
     kind: tezos.tzkt
     url: ${TZKT_URL:-https://api.ghostnet.tzkt.io}
 
 indexes:
-  big_maps_ghostnet:
+  metadata_mainnet:
+    kind: tezos.big_maps
+    datasources:
+      - mainnet
+    skip_history: never
+    handlers:
+      - callback: on_metadata_update
+        contract: mainnet
+        path: metadata
+      - callback: on_token_metadata_update
+        contract: mainnet
+        path: assets.token_metadata
+  metadata_ghostnet:
     kind: tezos.big_maps
     datasources:
       - ghostnet
     skip_history: never
     handlers:
       - callback: on_metadata_update
-        contract: mu_minter_ghostnet
+        contract: ghostnet
         path: metadata
       - callback: on_token_metadata_update
-        contract: mu_minter_ghostnet
+        contract: ghostnet
         path: assets.token_metadata
 
 advanced:
