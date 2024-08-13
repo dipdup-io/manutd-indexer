@@ -13,6 +13,17 @@ help:           ## Show this help (default)
 all:            ## Run an entire CI pipeline
 	make format lint
 
+##
+
+install:        ## Install dependencies
+	poetry install
+
+
+update:         ## Update dependencies
+	poetry update
+	dipdup self update -q
+
+
 format:         ## Format with all tools
 	make black
 
@@ -28,7 +39,7 @@ ruff:           ## Lint with ruff
 	ruff check --fix .
 
 mypy:           ## Lint with mypy
-	mypy --exclude ${PACKAGE} .
+	mypy .
 
 ##
 
