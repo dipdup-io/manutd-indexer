@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import RootModel
+
 from manutd_indexer.models import AbstractBigMapAction
 from manutd_indexer.models import TokenMetadataBigMapHistory
 from manutd_indexer.models import TokenMetadataBigMapModelMixin
 from manutd_indexer.models import TokenMetadataBigMapState
-from pydantic import RootModel
 
 
 class AssetsTokenMetadataKey(RootModel[str]):

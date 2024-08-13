@@ -5,8 +5,9 @@ from __future__ import annotations
 from typing import Any
 
 import orjson
-from manutd_indexer.models import MetadataBigMapModelMixin
 from pydantic import RootModel
+
+from manutd_indexer.models import MetadataBigMapModelMixin
 
 
 class MetadataValue(RootModel[str]):

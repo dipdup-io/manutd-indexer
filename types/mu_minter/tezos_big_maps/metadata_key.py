@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import RootModel
+
 from manutd_indexer.models import MetadataBigMapHistory
 from manutd_indexer.models import MetadataBigMapModelMixin
 from manutd_indexer.models import MetadataBigMapState
-from pydantic import RootModel
 
 
 class MetadataKey(RootModel[str]):

@@ -11,7 +11,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-dipdup = ">=8.0.0b5,<9"
+# dipdup = ">=8.0.0b5,<9"
+dipdup = {git = "https://git@github.com/dipdup-io/dipdup.git", rev = "aux/8.0.0"}
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
