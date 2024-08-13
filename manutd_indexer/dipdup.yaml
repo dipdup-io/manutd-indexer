@@ -35,18 +35,18 @@ datasources:
     url: ${TZKT_URL:-https://api.ghostnet.tzkt.io}
 
 indexes:
-  metadata_mainnet:
-    kind: tezos.big_maps
-    datasources:
-      - mainnet
-    skip_history: never
-    handlers:
-      - callback: on_metadata_update
-        contract: mainnet
-        path: metadata
-      - callback: on_token_metadata_update
-        contract: mainnet
-        path: assets.token_metadata
+  # metadata_mainnet:
+  #   kind: tezos.big_maps
+  #   datasources:
+  #     - mainnet
+  #   skip_history: never
+  #   handlers:
+  #     - callback: on_metadata_update
+  #       contract: mainnet
+  #       path: metadata
+  #     - callback: on_token_metadata_update
+  #       contract: mainnet
+  #       path: assets.token_metadata
   metadata_ghostnet:
     kind: tezos.big_maps
     datasources:
