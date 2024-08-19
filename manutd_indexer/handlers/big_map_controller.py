@@ -1,16 +1,16 @@
 import uuid
-from datetime import datetime
-from datetime import timezone
 from typing import Generic
 from typing import TypeVar
 
 from dipdup.context import HandlerContext
 from dipdup.models.tezos import TezosBigMapAction
 from dipdup.models.tezos import TezosBigMapDiff
-
+from pydantic import BaseModel
 
 from manutd_indexer.models import TEZOS_STORAGE_PREFIX
 from manutd_indexer.models import UUID_NAME_DELIMITER
+from manutd_indexer.types.mu_minter.tezos_big_maps.assets_token_metadata_key import AssetsTokenMetadataKey
+from manutd_indexer.types.mu_minter.tezos_big_maps.assets_token_metadata_value import AssetsTokenMetadataValue
 from manutd_indexer.types.mu_minter.tezos_big_maps.metadata_key import MetadataKey
 
 JOIN_KEY_FIELD_NAME = 'join_key'
@@ -18,11 +18,52 @@ JOIN_KEY_FIELD_NAME = 'join_key'
 BigMapDiffType = TypeVar('BigMapDiffType', bound=TezosBigMapDiff)
 
 
+class BigMapItemDTO(BaseModel):
+    key: str
+    value: str | dict | list
+    hash_part: str
+
+
+class BigMapItemBuilder:
+    @staticmethod
+    def build(big_map_diff: TezosBigMapDiff) -> BigMapItemDTO:
+        match big_map_diff:
+            case TezosBigMapDiff(
+                key=MetadataKey(root=str(metadata_key)),
+                value=value_object,
+            ) if metadata_key != '':
+                return BigMapItemDTO(
+                    key=metadata_key,
+                    value=value_object.as_dict(),
+                    hash_part=metadata_key,
+                )
+            case TezosBigMapDiff(
+                key=AssetsTokenMetadataKey(),
+                value=AssetsTokenMetadataValue(
+                    token_id=token_id,
+                    token_info={'': str(tezos_storage_key)},
+                ),
+            ):
+                try:
+                    tezos_storage_key = bytes.fromhex(tezos_storage_key).decode()
+                except ValueError:
+                    pass
+
+                metadata_key = tezos_storage_key.removeprefix(TEZOS_STORAGE_PREFIX).strip()
+                return BigMapItemDTO(
+                    key=token_id,
+                    value=metadata_key,
+                    hash_part=metadata_key,
+                )
+
+
 class BigMapController(Generic[BigMapDiffType]):
     def __init__(self, ctx: HandlerContext, big_map_diff: TezosBigMapDiff) -> None:
         self._big_map_diff = big_map_diff
-        self._network: str = ctx.handler_config.parent.datasources[0].name
+        self._network: str = ctx.handler_config.parent.random_datasource.name
+
         self._contract: str = ctx.handler_config.contract.address
+        self._item = BigMapItemBuilder.build(big_map_diff)
 
     async def handle_action(self):
         match self._big_map_diff:
@@ -49,9 +90,6 @@ class BigMapController(Generic[BigMapDiffType]):
         state_model = self._big_map_diff.key.get_state_model()
         await state_model.create(**record_dto)
 
-        history_model = self._big_map_diff.key.get_history_model()
-        await history_model.create(**record_dto)
-
     async def _handle_update_key(self):
         defaults, filter_query_dto = self._build_update_parameters_dto()
 
@@ -61,11 +99,6 @@ class BigMapController(Generic[BigMapDiffType]):
             **filter_query_dto,
         )
 
-        record_dto = self._build_record_dto()
-
-        history_model = self._big_map_diff.key.get_history_model()
-        await history_model.create(**record_dto)
-
     async def _handle_remove_key(self):
         record_dto = self._build_record_dto()
         defaults, filter_query_dto = self._build_update_parameters_dto()
@@ -73,11 +106,10 @@ class BigMapController(Generic[BigMapDiffType]):
         state_model = self._big_map_diff.key.get_state_model()
         await state_model.filter(**filter_query_dto).delete()
 
-        history_model = self._big_map_diff.key.get_history_model()
-        await history_model.create(**record_dto)
-
     def _build_record_dto(self) -> dict:
         record_dto = dict(
+            created_at=self._big_map_diff.data.timestamp,
+            updated_at=self._big_map_diff.data.timestamp,
             timestamp=self._big_map_diff.data.timestamp,
             network=self._network,
             level=self._big_map_diff.data.level,
@@ -96,6 +128,7 @@ class BigMapController(Generic[BigMapDiffType]):
 
     def _build_update_parameters_dto(self) -> tuple[dict, dict]:
         defaults = self._build_record_dto()
+        del defaults['created_at']
         fields_list = self._big_map_diff.key.get_composite_key_fields()
         filter_query_dto = {}
         for field_name in fields_list:
@@ -108,7 +141,7 @@ class BigMapController(Generic[BigMapDiffType]):
     def make_join_key(self) -> uuid.UUID:
         network = self._network
         contract = self._contract
-        metadata_key = self._big_map_diff.key.get_field_dto().popitem()[1].removeprefix(TEZOS_STORAGE_PREFIX)
+        metadata_key = self._item.hash_part
 
         return uuid.uuid5(
             namespace=uuid.NAMESPACE_OID,

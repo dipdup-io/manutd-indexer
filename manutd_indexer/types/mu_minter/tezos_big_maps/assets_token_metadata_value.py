@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Any
 from typing import Dict
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+from pydantic import ConfigDict
 
 from manutd_indexer.models import TEZOS_STORAGE_PREFIX
 from manutd_indexer.models import TokenMetadataBigMapModelMixin

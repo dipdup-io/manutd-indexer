@@ -1,6 +1,6 @@
 services:
   db:
-    image: timescale/timescaledb-ha:pg15
+    image: timescale/timescaledb-ha:pg16
     volumes:
       - db:/var/lib/postgresql/data
     restart: always

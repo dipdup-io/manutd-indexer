@@ -14,23 +14,46 @@ database:
 hasura:
   url: ${HASURA_URL:-http://hasura:8080}
   admin_secret: ${ADMIN_SECRET:-changeme}
-  select_limit: ${SELECT_LIMIT:-1000}
+  select_limit: ${SELECT_LIMIT:-10000}
   allow_aggregations: false
   rest: false
 
+datasources:
+  mainnet:
+    kind: tezos.tzkt
+    url: https://api.tzkt.io
+
+  ghostnet:
+    kind: tezos.tzkt
+    url: https://api.ghostnet.tzkt.io
+
+
 contracts:
+  mu_minter_mainnet:
+    kind: tezos
+    address: KT1RRTZ6DGnAPYTxXx4kzzQZFiZ8yo76pULU
+    typename: mu_minter
+
   mu_minter_ghostnet:
     kind: tezos
     address: KT1M2u4GUZsQ8BUYKTKYPEwzDYUurRtooTwn
     typename: mu_minter
 
-datasources:
-  ghostnet:
-    kind: tezos.tzkt
-    url: ${TZKT_URL:-https://api.ghostnet.tzkt.io}
-
 indexes:
-  big_maps_ghostnet:
+  big_maps_index_mainnet:
+    kind: tezos.big_maps
+    datasources:
+      - mainnet
+    skip_history: never
+    handlers:
+      - callback: on_metadata_update
+        contract: mu_minter_mainnet
+        path: metadata
+      - callback: on_token_metadata_update
+        contract: mu_minter_mainnet
+        path: assets.token_metadata
+
+  big_maps_index_ghostnet:
     kind: tezos.big_maps
     datasources:
       - ghostnet
@@ -42,6 +65,3 @@ indexes:
       - callback: on_token_metadata_update
         contract: mu_minter_ghostnet
         path: assets.token_metadata
-
-advanced:
-  metadata_interface: True

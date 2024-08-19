@@ -1,11 +1,14 @@
-CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
-
-ALTER TABLE big_map_metadata_history DROP CONSTRAINT big_map_metadata_history_pkey;
-ALTER TABLE big_map_metadata_history ADD PRIMARY KEY (id, timestamp);
-SELECT create_hypertable('big_map_metadata_history', 'timestamp');
-SELECT set_chunk_time_interval('big_map_metadata_history', INTERVAL '3 months');
-
-ALTER TABLE big_map_token_metadata_history DROP CONSTRAINT big_map_token_metadata_history_pkey;
-ALTER TABLE big_map_token_metadata_history ADD PRIMARY KEY (id, timestamp);
-SELECT create_hypertable('big_map_token_metadata_history', 'timestamp');
-SELECT set_chunk_time_interval('big_map_token_metadata_history', INTERVAL '3 months');
+CREATE OR REPLACE VIEW dipdup_token_metadata_view AS
+SELECT
+    tm.network,
+    tm.contract,
+    tm.token_id,
+    m.value AS metadata,
+    GREATEST(m.level, tm.level)::bigint << 30 | tm.token_id::bigint AS update_id,
+    tm.created_at,
+    GREATEST(m."timestamp", tm."timestamp") AS updated_at
+FROM
+    big_map_token_metadata_state AS tm
+JOIN
+    big_map_metadata_state AS m
+USING (join_key);

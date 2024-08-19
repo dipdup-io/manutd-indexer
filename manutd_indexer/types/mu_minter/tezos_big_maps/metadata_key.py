@@ -8,8 +8,6 @@ from typing import Type
 
 from pydantic import RootModel
 
-from manutd_indexer.models import AbstractBigMapAction
-from manutd_indexer.models import MetadataBigMapHistory
 from manutd_indexer.models import MetadataBigMapModelMixin
 from manutd_indexer.models import MetadataBigMapState
 
@@ -25,10 +23,6 @@ class MetadataKey(RootModel[str]):
     @staticmethod
     def get_state_model() -> Type[MetadataBigMapState]:
         return MetadataBigMapState
-
-    @staticmethod
-    def get_history_model() -> Type[MetadataBigMapHistory]:
-        return MetadataBigMapHistory
 
     @staticmethod
     def get_composite_key_fields() -> list[str]:

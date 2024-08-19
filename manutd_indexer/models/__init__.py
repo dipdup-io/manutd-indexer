@@ -47,21 +47,8 @@ class MetadataBigMapState(AbstractBigMapAction, MetadataBigMapModelMixin, Dateti
         model = 'models.MetadataBigMapHistory'
 
 
-class MetadataBigMapHistory(AbstractBigMapAction, MetadataBigMapModelMixin, DatetimeModelMixin):
-    class Meta:
-        table = 'big_map_metadata_history'
-        model = 'models.MetadataBigMapHistory'
-
-
 class TokenMetadataBigMapState(AbstractBigMapAction, TokenMetadataBigMapModelMixin, DatetimeModelMixin):
     class Meta:
         table = 'big_map_token_metadata_state'
         model = 'models.TokenMetadataBigMapState'
-        indexes = (('network', 'contract', 'token_id'),)
-
-
-class TokenMetadataBigMapHistory(AbstractBigMapAction, TokenMetadataBigMapModelMixin, DatetimeModelMixin):
-    class Meta:
-        table = 'big_map_token_metadata_history'
-        model = 'models.TokenMetadataBigMapHistory'
         indexes = (('network', 'contract', 'token_id'),)

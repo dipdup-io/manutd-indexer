@@ -9,7 +9,6 @@ from typing import Type
 from pydantic import RootModel
 
 from manutd_indexer.models import AbstractBigMapAction
-from manutd_indexer.models import TokenMetadataBigMapHistory
 from manutd_indexer.models import TokenMetadataBigMapModelMixin
 from manutd_indexer.models import TokenMetadataBigMapState
 
@@ -25,10 +24,6 @@ class AssetsTokenMetadataKey(RootModel[str]):
     @staticmethod
     def get_state_model() -> Type[TokenMetadataBigMapState]:
         return TokenMetadataBigMapState
-
-    @staticmethod
-    def get_history_model() -> Type[TokenMetadataBigMapHistory]:
-        return TokenMetadataBigMapHistory
 
     @staticmethod
     def get_composite_key_fields() -> list[str]:
