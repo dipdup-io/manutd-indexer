@@ -38,12 +38,12 @@ templates:
       - <datasource>
     skip_history: once
     handlers:
-      - callback: on_metadata_update
-        contract: <contract>
-        path: metadata
       - callback: on_token_metadata_update
         contract: <contract>
         path: assets.token_metadata
+      - callback: on_metadata_update
+        contract: <contract>
+        path: metadata
 
 advanced:
   metadata_interface: True
