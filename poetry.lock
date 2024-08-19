@@ -993,7 +993,7 @@ web3 = ">=6.19,<7.0"
 type = "git"
 url = "https://git@github.com/dipdup-io/dipdup.git"
 reference = "aux/8.0.0"
-resolved_reference = "afe708392d69137346b5e001e7027dbdbcba8bb6"
+resolved_reference = "6b7c53fdcb7cdd1bd26155d7cd49d3d18854d20f"
 
 [[package]]
 name = "dnspython"
